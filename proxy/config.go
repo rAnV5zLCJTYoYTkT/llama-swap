@@ -73,10 +73,11 @@ func (c *Config) GetListenAddress() string {
 }
 
 // GetHealthCheckTimeout parses and returns the health check timeout duration.
-// Defaults to 30 seconds if not specified.
+// Defaults to 60 seconds if not specified — increased from 30s because large
+// models on my machine can take a while to load into VRAM.
 func (c *Config) GetHealthCheckTimeout() (time.Duration, error) {
 	if c.HealthCheckTimeout == "" {
-		return 30 * time.Second, nil
+		return 60 * time.Second, nil
 	}
 	return time.ParseDuration(c.HealthCheckTimeout)
 }
@@ -90,33 +91,4 @@ func (c *Config) Validate() error {
 		if model.Cmd == "" {
 			return fmt.Errorf("model %q: cmd is required", name)
 		}
-		if model.Proxy == "" {
-			return fmt.Errorf("model %q: proxy address is required", name)
-		}
-		if model.TTL != "" {
-			if _, err := time.ParseDuration(model.TTL); err != nil {
-				return fmt.Errorf("model %q: invalid ttl %q: %w", name, model.TTL, err)
-			}
-		}
-	}
-	return nil
-}
-
-// LoadConfig reads and parses a YAML configuration file from the given path.
-func LoadConfig(path string) (*Config, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("reading config file %q: %w", path, err)
-	}
-
-	var cfg Config
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return nil, fmt.Errorf("parsing config file %q: %w", path, err)
-	}
-
-	if err := cfg.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid config: %w", err)
-	}
-
-	return &cfg, nil
-}
+		i
