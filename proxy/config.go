@@ -73,11 +73,11 @@ func (c *Config) GetListenAddress() string {
 }
 
 // GetHealthCheckTimeout parses and returns the health check timeout duration.
-// Defaults to 120 seconds if not specified — my workstation is slow to load
-// large quantized models (e.g. Q8 70B) into VRAM, 60s wasn't always enough.
+// Defaults to 180 seconds — my machine is slow to load large quantized models
+// (e.g. Q8 70B) into VRAM, and 120s still occasionally times out on cold starts.
 func (c *Config) GetHealthCheckTimeout() (time.Duration, error) {
 	if c.HealthCheckTimeout == "" {
-		return 120 * time.Second, nil
+		return 180 * time.Second, nil
 	}
 	return time.ParseDuration(c.HealthCheckTimeout)
 }
@@ -87,4 +87,4 @@ func (c *Config) Validate() error {
 	if len(c.Models) == 0 {
 		return fmt.Errorf("config must define at least one model")
 	}
-	for name, model := range c.M
+	for name, m
