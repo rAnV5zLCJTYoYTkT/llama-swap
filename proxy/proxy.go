@@ -56,9 +56,14 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // resolveModel extracts the requested model name from the request.
-// It checks the X-Model header first, then falls back to the default model.
+// It checks the X-Model header first, then the query parameter "model",
+// then falls back to the default model.
 func (p *Proxy) resolveModel(r *http.Request) (string, error) {
 	if model := r.Header.Get("X-Model"); model != "" {
+		return model, nil
+	}
+	// Also support ?model=... as a convenience for quick testing in the browser
+	if model := r.URL.Query().Get("model"); model != "" {
 		return model, nil
 	}
 	if p.config.DefaultModel != "" {
@@ -103,20 +108,4 @@ func (p *Proxy) ensureModel(name string) (*url.URL, error) {
 func (p *Proxy) stopCurrent() {
 	// Actual process termination is handled by the process manager.
 	// This is a placeholder for the stop logic.
-	log.Printf("[proxy] stopped model %q (ran for %s)", p.currentName, time.Since(p.current.Started).Round(time.Second))
-	p.current = nil
-	p.currentName = ""
-}
-
-// startModel launches the backend process for the given model configuration.
-func startModel(name string, cfg ModelConfig) (*ModelProcess, error) {
-	if cfg.Port <= 0 {
-		return nil, fmt.Errorf("model %q has invalid port %d", name, cfg.Port)
-	}
-	// Process launching (exec.Cmd) will be implemented in process.go
-	return &ModelProcess{
-		Name:    name,
-		Port:    cfg.Port,
-		Started: time.Now(),
-	}, nil
-}
+	log.Printf("[proxy] stopped model %q (ran fo
